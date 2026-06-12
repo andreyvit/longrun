@@ -53,6 +53,19 @@ SwiftUI views read observable models directly; views are already the
 `LocalProcessTerminalView` (processes must run and be monitored with no view
 on screen). Read-only: keyboard input is simply never forwarded.
 
+## App shell
+
+- Regular `Window` scene + `MenuBarExtra` (menu style: per-config status +
+  Show Window / About / Quit).
+- Closing the window never terminates the app; only explicit Quit does
+  (which tears down all process groups first).
+- "Show Dock icon" toggle = `NSApp.setActivationPolicy(.regular/.accessory)`
+  at runtime. Any toggle combination is allowed, including fully invisible
+  (no Dock icon, no menu bar icon): launching the app again delivers a reopen
+  event to the running instance — handle it (`applicationShouldHandleReopen`)
+  by showing the window.
+- In menu-bar-only or invisible mode, do not show the window on launch.
+
 ## Storage
 
 - **One JSON file per configuration** in
