@@ -75,24 +75,44 @@ on screen). Read-only: keyboard input is simply never forwarded.
 
 ## Layout
 
+The "Services/ has no SwiftUI" boundary is enforced at compile time by putting
+the headless core in a **local SwiftPM package** (`LongrunCore`, default actor
+isolation `nonisolated`), with the SwiftUI app (`Longrun` target, default
+isolation `MainActor`) depending on it. The Xcode project is generated from
+`project.yml` by **XcodeGen** (the `.xcodeproj` is gitignored). Core logic is
+unit-tested with `swift test`; the app needs no UI tests.
+
 ```
-Longrun/
-  LongrunApp.swift          // @main, creates AppModel, injects via .environment()
-  Models/
-    AppModel.swift          // @Observable: configurations list, selection
-    Configuration.swift     // Codable value type: command, cwd, env, autostart, regexps
-    RunSession.swift        // @Observable, one per running config: status, output buffer
-  Services/                 // plain Swift, no SwiftUI imports — unit-testable
+project.yml                 // XcodeGen: app target, LongrunCore dep, scheme
+LongrunCore/                // local SwiftPM package — no SwiftUI/AppKit-UI
+  Package.swift
+  Sources/LongrunCore/
+    Configuration.swift     // Codable value type: command, mode, cwd, env, rules…
     ConfigStore.swift       // one JSON file per config in App Support
-    ProcessRunner.swift     // PTY spawn, process group, kill-on-quit
-    EnvResolver.swift       // cached login-shell env capture (with timeout)
+    EnvResolver.swift       // cached login-shell env capture (timeout + fallback)
+    CommandLineSplitter.swift // quoting-aware argv split + PATH resolution
+    PTY.swift               // openpty / winsize
+    ProcessRunner.swift     // helper-pattern spawn, output stream, group kill
+    AnsiLineAssembler.swift // byte→line state machine for matching
     OutputMatcher.swift     // regexp scanning → events
-    Notifier.swift          // UserNotifications wrapper
+  Tests/LongrunCoreTests/
+longrun-spawn-helper/        // tiny C tool: reopen tty (ctty), chdir, execvp
+Longrun/                     // SwiftUI app target (MainActor)
+  LongrunApp.swift          // @main, Window + MenuBarExtra, AppDelegate adaptor
+  Models/
+    AppModel.swift          // @Observable: configs, selection, RunSession registry
+    RunSession.swift        // @Observable, one per config: state, buffer, restart
+  Services/
+    Notifier.swift          // UserNotifications wrapper (conforms NotificationSink)
+    LoginItem.swift         // SMAppService wrapper
   Views/
-    Sidebar/                // config list + status dots
-    Detail/                 // tab switcher; SettingsForm; TerminalPane
-    TerminalPane.swift      // NSViewRepresentable wrapping SwiftTerm's TerminalView
+    Sidebar/  Detail/  SettingsForm  TerminalPane  MenuBarContent
 ```
+
+Why the C spawn-helper: `posix_spawn`+`SETSID` alone does **not** attach a
+controlling terminal on macOS (verified), which breaks SIGWINCH and `/dev/tty`.
+`ProcessRunner` execs a ~20-line bundled C helper that reopens the slave tty as
+session leader (acquiring the ctty), `chdir`s, then `execvp`s the real command.
 
 ## Rules
 

@@ -1,0 +1,47 @@
+name: Longrun
+
+options:
+  bundleIdPrefix: com.tarantsov
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+packages:
+  LongrunCore:
+    path: LongrunCore
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: D963M2VVCH
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  Longrun:
+    type: application
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - Longrun
+    dependencies:
+      - package: LongrunCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tarantsov.Longrun
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.developer-tools
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        ENABLE_HARDENED_RUNTIME: NO
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+
+schemes:
+  Longrun:
+    build:
+      targets:
+        Longrun: all
+    run:
+      config: Debug
+    test:
+      config: Debug

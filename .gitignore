@@ -1,0 +1,22 @@
+# Xcode
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.xcresult
+
+# XcodeGen output — the project is regenerated from project.yml
+Longrun.xcodeproj/
+
+# SwiftPM
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Lighto
+.spec/
+.tasks/
