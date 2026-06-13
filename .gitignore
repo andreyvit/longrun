@@ -20,3 +20,4 @@ Longrun.xcodeproj/
 # Lighto
 .spec/
 .tasks/
+.proposals/
