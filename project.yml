@@ -18,6 +18,16 @@ settings:
     CODE_SIGN_STYLE: Automatic
 
 targets:
+  longrun-spawn-helper:
+    type: tool
+    platform: macOS
+    deploymentTarget: "26.0"
+    sources:
+      - longrun-spawn-helper
+    settings:
+      base:
+        PRODUCT_NAME: longrun-spawn-helper
+
   Longrun:
     type: application
     platform: macOS
@@ -26,6 +36,9 @@ targets:
       - Longrun
     dependencies:
       - package: LongrunCore
+      - target: longrun-spawn-helper
+        copy:
+          destination: executables  # Contents/MacOS, where forAuxiliaryExecutable looks
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tarantsov.Longrun
