@@ -4,26 +4,7 @@ import Testing
 
 @Suite(.serialized, .timeLimit(.minutes(1))) struct ProcessRunnerTests {
 
-    /// The real C helper, compiled once via clang from the single source of
-    /// truth so `swift test` exercises the production ctty logic.
-    static let helperURL: URL = buildHelper()
-
-    private static func buildHelper() -> URL {
-        let repoRoot = URL(filePath: #filePath)
-            .deletingLastPathComponent()  // LongrunCoreTests
-            .deletingLastPathComponent()  // Tests
-            .deletingLastPathComponent()  // LongrunCore
-            .deletingLastPathComponent()  // repo root
-        let source = repoRoot.appending(path: "longrun-spawn-helper/main.c")
-        let out = FileManager.default.temporaryDirectory.appending(path: "longrun-spawn-helper-\(UUID().uuidString)")
-        let clang = Process()
-        clang.executableURL = URL(filePath: "/usr/bin/clang")
-        clang.arguments = ["-O2", "-o", out.path, source.path]
-        try! clang.run()
-        clang.waitUntilExit()
-        precondition(clang.terminationStatus == 0, "failed to compile spawn helper at \(source.path)")
-        return out
-    }
+    static var helperURL: URL { SpawnHelperFixture.url }
 
     private static let baseEnv = ["PATH": "/usr/bin:/bin:/usr/sbin:/sbin", "TERM": "xterm"]
 
